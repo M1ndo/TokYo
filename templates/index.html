@@ -1,0 +1,40 @@
+{{ $playing := .Playing }}
+<html>
+<head>
+    <title>Tube</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/static/theme.css">
+</head>
+<body>
+    <nav><a href="/">Tube</a></nav>
+    <main>
+        <div id="player">
+            {{ if $playing.ID }}
+            <video id="video" controls poster="/t/{{ $playing.ID}}" src="/v/{{ $playing.ID }}.mp4"></video>
+            <h1>{{ $playing.Title }}</h1>
+            <h2>{{ $playing.Modified }}</h2>
+            <p>{{ $playing.Description }}</p>
+            {{ else }}
+            <video id="video" controls></video>
+            {{ end }}
+        </div>
+        <div id="playlist">
+            {{ range $m := .Playlist }}
+            {{ if eq $m.ID $playing.ID }}
+            <a href="/v/{{ $m.ID }}" class="playing">
+            {{ else }}
+            <a href="/v/{{ $m.ID }}">
+            {{ end }}
+                <img src="/t/{{ $m.ID }}">
+                <div>
+                    <h1>{{ $m.Title }}</h1>
+                    <h2>{{ $m.Modified }}</h2>
+                </div>
+            </a>
+            {{ end }}
+        </div>
+    </main>
+</body>
+</html>
