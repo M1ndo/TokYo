@@ -1,14 +1,14 @@
 {{ $playing := .Playing }}
 <html>
 <head>
-    <title>Tube</title>
+    <title>TokYo</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="stylesheet" type="text/css" href="/static/theme.css">
 </head>
 <body>
-    <nav><a href="/">Tube</a></nav>
+    <nav><a href="/">TokYo</a></nav>
     <main>
         <div id="player">
             {{ if $playing.ID }}
@@ -27,7 +27,7 @@
             {{ else }}
             <a href="/v/{{ $m.ID }}">
             {{ end }}
-                <img src="/t/{{ $m.ID }}">
+                <img src="/static/default.jpg">
                 <div>
                     <h1>{{ $m.Title }}</h1>
                     <h2>{{ $m.Modified }}</h2>
