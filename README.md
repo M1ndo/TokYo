@@ -17,7 +17,7 @@
 
 ## Server Runs By Default On 127.0.0.1:9051 And It Will Assign A Random Port Every Time You Run It To Avoid Conflicting With Other Apps And To Ensure Privacy, Configure This To Specific Host:Port by editing  `config.json` before running the server , also change RSS  feed details and library path for  `config.json`
 
-<img src="https://i.ibb.co/cNcgWSK/TokYor.jpg" alt="TokYor" border="0">
+<img src="https://i.ibb.co/cNcDv0K/TokYo22.jpg" alt="TokYo22" border="0">
 
 # installation 
 ```

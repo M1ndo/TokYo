@@ -1,6 +1,6 @@
 :root {
-    --main-title-color: #ae81ff;
-    --link-hover-color: #ae81ff;
+    --main-title-color: #FF0000;
+    --link-hover-color: #FF0000;
 }
 
 /* normalize */
@@ -15,7 +15,7 @@
 }
 
 a {
-    color: inherit;
+    color: #FF0000;
     text-decoration: none;
 }
 
@@ -23,8 +23,8 @@ body {
     font-family: Arial, sans-serif;
     font-size: 16px;
     font-weight: 400;
-    color: #c5c8c6;
-    background: #1e1e1e;
+    color: #000000;
+    background: #ffffff;
     padding-bottom: 10px;
 }
 
@@ -69,7 +69,7 @@ main {
 
 #player > h2 {
     margin-top: 5px;
-    color: #676867;
+    color: #c5c8c6;
     font-size: 90%;
 }
 
@@ -101,7 +101,7 @@ main {
 }
 
 #playlist > a.playing {
-    background: #383a3e;
+    background: #ffffff;
 }
 
 #playlist > a + a {
