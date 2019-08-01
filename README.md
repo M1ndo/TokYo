@@ -21,6 +21,8 @@
 # installation 
 ```
 1. git clone https://github.com/m1ndo/TokYo/
+1.5 if you don't want to use git clone you can use 
+- go get github.com/m1ndo/TokYo/
 2. cd TokYo
 3. go run main.go (If You Don't Have GoLanfg Installed Then Installed it)
 4. Move Files To videos Folder
