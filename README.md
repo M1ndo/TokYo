@@ -28,4 +28,4 @@
 5. Enjoy :v:
 ```
 
-## Author: [__ybenel_]
+## Author: [__ybenel__]
