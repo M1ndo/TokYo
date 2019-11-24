@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ybenel/TokYo/pkg/app"
+	"github.com/m1ndo/TokYo/pkg/app"
 )
 
 func main() {

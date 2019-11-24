@@ -18,8 +18,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/feeds"
 	"github.com/gorilla/mux"
-	"github.com/ybenel/TokYo/pkg/media"
-	"github.com/ybenel/TokYo/pkg/onionkey"
+	"github.com/m1ndo/TokYo/pkg/media"
+	"github.com/m1ndo/TokYo/pkg/onionkey"
 )
 
 // App represents main application.
