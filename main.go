@@ -1,4 +1,4 @@
-// Created By r2dr0dn
+// Created By ybenel
 // Date: 20/07/2019
 // Don't Copy The Code Without Giving me The Credits Nerd !!
 package main
@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/r2dr0dn/TokYo/pkg/app"
+	"github.com/ybenel/TokYo/pkg/app"
 )
 
 func main() {
