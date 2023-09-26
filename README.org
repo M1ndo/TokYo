@@ -8,6 +8,7 @@ It supports multiple formats and is pretty customizable and can be private.
   seperate between Public and Private videos.
   Passwords are encrypted with bcrypt(10c) and stored in sqlitedb.
 - Has a 90s design (Desktop And Mobile)
+- Metadata auto extraction via [[github.com/dhowden/tag][tag]]
 - Options Create multiple playlists and prefixes.
 - Can deploy itself to the onion service
 - Integration to stream from [[https://github.com/Stremio/stremio-core][Stremio]]
