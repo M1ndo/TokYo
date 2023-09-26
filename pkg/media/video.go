@@ -3,6 +3,8 @@
 package media
 
 import (
+	"fmt"
+	"html/template"
 	"os"
 	"path"
 	"strings"
@@ -21,9 +23,15 @@ type Video struct {
 	ThumbType   string
 	Modified    string
 	Size        int64
+	FileType    template.HTML
 	Path        string
+	FilePath    string
 	Timestamp   time.Time
+	Restricted  bool
 }
+
+// valid supported extensions
+var extensions = []string{".webm", ".wav", ".mp4", ".mp3", ".opus", ".ogg", ".flac", ".m4a", ".m4r", ".acc", ".wav", ".weba"}
 
 // ParseVideo parses a video file's metadata and returns a Video.
 func ParseVideo(p *Path, name string) (*Video, error) {
@@ -35,6 +43,9 @@ func ParseVideo(p *Path, name string) (*Video, error) {
 	info, err := f.Stat()
 	if err != nil {
 		return nil, err
+	}
+	if info.IsDir() {
+		return nil, fmt.Errorf("Ignoring %s is a directory ", name)
 	}
 	size := info.Size()
 	timestamp := info.ModTime()
@@ -49,25 +60,44 @@ func ParseVideo(p *Path, name string) (*Video, error) {
 		// if there's a prefix prepend it to the ID
 		id = path.Join(p.Prefix, name[:idx])
 	}
+	v := &Video {
+		ID:          id,
+		Modified:    modified,
+		Size:        size,
+		Path:        pth,
+		Timestamp:   timestamp,
+		Restricted:  p.Private,
+	}
+	v.FilePath = "/v/" + p.Prefix + "/" + name //  strings.Replace(pth, "videos/", "", 1)
+	fileExt := path.Ext(name)
+	exists := false
+	for _, ext := range extensions {
+		if fileExt == ext {
+			exists = true
+			break
+		}
+	}
+	if !exists {
+		return nil, fmt.Errorf("Unsupported file format %s ", name)
+	}
+	name = strings.ReplaceAll(strings.Split(name, ".")[0], "_", " ")
 	m, err := tag.ReadFrom(f)
+	v.FileType = template.HTML(NewLibrary().GetContentType(fileExt))
 	if err != nil {
-		return nil, err
+				v.Title = name
+				v.Album = "Unknown Album"
+				v.Description = "NO Description"
+				return v, nil
 	}
 	title := m.Title()
 	// Default title is filename
 	if title == "" {
 		title = name
 	}
-	v := &Video{
-		ID:          id,
-		Title:       title,
-		Album:       m.Album(),
-		Description: m.Comment(),
-		Modified:    modified,
-		Size:        size,
-		Path:        pth,
-		Timestamp:   timestamp,
-	}
+	// print(title, "\n")
+	v.Title = title
+	v.Album = m.Album()
+	v.Description = m.Comment()
 	// Add thumbnail (if exists)
 	pic := m.Picture()
 	if pic != nil {

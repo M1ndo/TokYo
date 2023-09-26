@@ -1,15 +1,18 @@
-// Date: 26/06/2019
+// Date: 26/06/2019 // 2023/09/11
 // Created By ybenel
 package media
 
 import (
 	"errors"
-	"io/ioutil"
-	"log"
+	"os"
+
+	// "io/ioutil"
 	"path"
 	"sort"
 	"strings"
 	"sync"
+
+	mylog "gitlab.com/DaFunk1/TokYo/pkg/log"
 )
 
 // Library manages importing and retrieving video data.
@@ -46,13 +49,15 @@ func (lib *Library) AddPath(p *Path) error {
 }
 
 // Import adds all valid videos from a given path.
-func (lib *Library) Import(p *Path) error {
-	files, err := ioutil.ReadDir(p.Path)
+func (lib *Library) Import(logger *mylog.Logger, p *Path) error {
+	files, err := os.ReadDir(p.Path)
+	// files, err := ioutil.ReadDir(p.Path)
 	if err != nil {
 		return err
 	}
 	for _, info := range files {
-		err = lib.Add(path.Join(p.Path, info.Name()))
+		// log.Println(info.Name())
+		err = lib.Add(logger, path.Join(p.Path, info.Name()))
 		if err != nil {
 			// Ignore files that can't be parsed
 			continue
@@ -62,32 +67,38 @@ func (lib *Library) Import(p *Path) error {
 }
 
 // Add adds a single video from a given file path.
-func (lib *Library) Add(filepath string) error {
+func (lib *Library) Add(logger *mylog.Logger, filepath string) error {
+	// log.Println("Filepath: %s", filepath)
 	lib.mu.Lock()
 	defer lib.mu.Unlock()
 	d := path.Dir(filepath)
 	p, ok := lib.Paths[d]
 	if !ok {
-		log.Println(d)
+		logger.Log.Warn("media: path %s not found", d)
 		return errors.New("media: path not found")
 	}
+	// log.Println("P: %s", p) // Prints All files paths.
 	n := path.Base(filepath)
+	// log.Printf(n) // Prints all files in directory /videos
 	v, err := ParseVideo(p, n)
 	if err != nil {
+		logger.Log.Warn(err)
 		return err
 	}
+	// log.Println(v) // Prints array from tags returns metadata
 	lib.Videos[v.ID] = v
-	log.Println("Added:", v.Path)
+	logger.Log.Info("Added:", v.Path)
 	return nil
 }
 
 // Remove removes a single video from a given file path.
-func (lib *Library) Remove(filepath string) {
+func (lib *Library) Remove(logger *mylog.Logger, filepath string) {
 	lib.mu.Lock()
 	defer lib.mu.Unlock()
 	d := path.Dir(filepath)
 	p, ok := lib.Paths[d]
 	if !ok {
+		logger.Log.Warn("media: path %s not found", d)
 		return
 	}
 	n := path.Base(filepath)
@@ -103,7 +114,7 @@ func (lib *Library) Remove(filepath string) {
 	v, ok := lib.Videos[id]
 	if ok {
 		delete(lib.Videos, id)
-		log.Println("Removed:", v.Path)
+		logger.Log.Info("Removed:", v.Path)
 	}
 }
 
@@ -119,4 +130,24 @@ func (lib *Library) Playlist() Playlist {
 	}
 	sort.Sort(pl)
 	return pl
+}
+
+// Handle Content Type Media
+func (lib *Library) GetContentType(ext string) string {
+	contentTypes := map[string]string{
+		".mp4":  "video/mp4",
+		".mp3":  "audio/mpeg",
+		".webm": "video/webm",
+		".weba": "video/webm",
+		".flac": "audio/flac",
+		".ogg": "audio/ogg",
+		".m4a": "audio/m4a",
+		".m4r": "audio/m4a",
+		".opus": "audio/opus",
+		".wav": "audio/wav",
+	}
+	if contentType, ok := contentTypes[ext]; ok {
+		return contentType
+	}
+	return "application/octet-stream"
 }

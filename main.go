@@ -1,30 +1,31 @@
 // Created By ybenel
-// Date: 20/07/2019
-// Don't Copy The Code Without Giving me The Credits Nerd !!
+// Date: 20/07/2019 || Updated in 2023/02/09
 package main
 
 import (
 	"fmt"
-	"log"
+	app "gitlab.com/DaFunk1/TokYo/pkg/app"
 	"os"
-
-	"github.com/m1ndo/TokYo/pkg/app"
 )
 
 func main() {
 	cfg := app.DefaultConfig()
 	err := cfg.ReadFile("config.json")
 	if err != nil && !os.IsNotExist(err) {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
+	app.ParseFlags(cfg)
 	a, err := app.NewApp(cfg)
+	logger := a.GetLogger()
 	if err != nil {
-		log.Fatal(err)
+		logger.Log.Fatal(err)
+		a.Debug.Logger.Debug(err)
 	}
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
-	log.Printf("Local server: http://%s", addr)
+	logger.Log.Infof("Local server: http://%s", addr)
 	err = a.Run()
 	if err != nil {
-		log.Fatal(err)
+		logger.Log.Fatal(err)
+		a.Debug.Logger.Debug(err)
 	}
 }

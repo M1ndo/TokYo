@@ -1,0 +1,63 @@
+#+title: TokYo
+TokYo is a pretty fast streaming app, that went from simple to even more simple.
+It supports multiple formats and is pretty customizable and can be private.
+
+* Features.
+- Supports Formats [mp4, mp3, ogg, opus webm flac m4a m4r acc wav]
+- Middleware and login authentication via email checking with the option to
+  seperate between Public and Private videos.
+  Passwords are encrypted with bcrypt(10c) and stored in sqlitedb.
+- Has a 90s design (Desktop And Mobile)
+- Options Create multiple playlists and prefixes.
+- Can deploy itself to the onion service
+- Integration to stream from [[https://github.com/Stremio/stremio-core][Stremio]]
+- Auto file detection (adds and removes files automatically)
+- Written in go and with goroutines (Pretty Fast)
+- Plus other features i forgot to document (Documentation coming soon).
+
+* Installation.
+** Prebinaries (coming soon)
+** Manual.
+#+begin_src bash
+git clone https://github.com/m1ndo/TokYo
+export GO111MODULE=on
+go build .
+go build cmd/tokyo-sql/tokyo-sql.go
+# OR
+go get github.com/m1ndo/TokYo@latest  # Needs assets files to work, this method will be fixed later.
+go get github.com/m1ndo/TokYo/cmd/tokyo-sql@latest
+#+end_src
+* Running
+#+begin_src bash
+./TokYo
+# OR
+./TokYo -host 192.168.1.110 -port 9001 # Plus other args see -help for full list
+#+end_src
+* Customization
+Edit =config.json= to create playlists and folders.
+*Add* your videos to =videos= folder.
+#+begin_src json
+{
+    "path": "videos/Public/",
+    "prefix": "PublicVideos",
+    "private": false
+},
+#+end_src
+** Add/delete/show users.
+Simply by creating an account in =/signup=
+*admin* users or normal users can be created using =tokyo-sql=.
+#+begin_src bash
+./tokyo-sql -action add -user user123 -pass pass123
+# OR
+./tokyo-sql -action add -user user123 -pass pass123 -email test@validmail.com
+# Set as admin
+./tokyo-sql -action add -user user123 -pass pass123 -admin
+# View All users
+./tokyo-sql -show
+#+end_src
+* Screenshots
+#+HTML: <img src="assets/tokyo1.png" align="center" width="1000" height="500">
+#+HTML: <img src="assets/tokyo2.png" align="center" width="1000" height="500">
+
+* License
+AGPL3

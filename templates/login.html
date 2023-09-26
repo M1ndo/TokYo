@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/login.css">
+</head>
+<body>
+    <div class="form-structor">
+        <div class="signup">
+            <h2 class="form-title" id="signup">Login In</h2>
+            <form action="/login" method="POST">
+                <div class="form-holder">
+                    <input type="text" name="username" class="input" placeholder="Name" required>
+                    <input type="password" name="password" class="input" placeholder="Password" required>
+                </div>
+                <button class="submit-btn" type="submit">Login in</button>
+            </form>
+        </div>
+        <div class="login slide-up">
+            <div class="center">
+                <h2 class="form-title" id="login"><span>or </span>Sign up</h2>
+                <form action="/signup" method="POST">
+                    <div class="form-holder">
+                        <input type="email" name="email" class="input" placeholder="Email" required >
+                        <input type="username" name="username" class="input" placeholder="Name" required>
+                        <input type="password" name="password" class="input" placeholder="Password" required >
+                    </div>
+                    <button class="submit-btn" type="submit">Sign up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {{ if .Error }}
+    <div class="error-message">
+        {{ .Error }}
+        <span class="close-button" id="close-button">&times;</span>
+    </div>
+    {{ end }}
+    <script src="/static/login.js"></script>
+</body>
+</html>

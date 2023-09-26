@@ -1,0 +1,207 @@
+/* General Styles */
+@font-face{
+    font-family:FSEX300;
+    src:url("fonts/FSEX300.ttf");
+    font-style:normal;
+    font-weight:400
+}
+html{
+    /* overflow:hidden; */
+    font-family:FSEX300;
+    font-style:normal;
+    font-stretch:normal;
+    /* -webkit-user-select:none; */
+    /* -moz-user-select:none; */
+    /* -ms-user-select:none; */
+    /* user-select:none; */
+    vertical-align:baseline;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-text-size-adjust:100%;
+    -ms-text-size-adjust:100%;
+    text-size-adjust:100%;
+    background:#b8b8b8;
+    font-size:14px
+}
+body,html{
+    width:100%;
+    height:100%
+}
+/* .button,.content,body{ */
+/*     display:-webkit-flex; */
+/*     display:flex; */
+/*     -webkit-align-items:center; */
+/*     align-items:center; */
+/*     -webkit-justify-content:center; */
+/*     justify-content:center */
+/* } */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box
+}
+.border{
+    border:1px solid #000;
+    padding:3px;
+    width:292px;
+    background:#000575;
+    background-image:linear-gradient(45deg,#007575 26%,transparent 0,transparent 74%,#007575 0),linear-gradient(45deg,#007575 26%,transparent 0,transparent 74%,#007575 0);
+    background-size:2px 2px;
+    background-position:0 0,1px 1px
+}
+body {
+    /* font-family: Arial, sans-serif; */
+    font-family:FSEX300;
+    font-style:normal;
+    font-stretch:normal;
+    /* font-size: 16px; */
+    /* font-weight: 400; */
+    /* color: #000000; */
+    /* background: #ffffff; */
+}
+
+/* Navigation */
+nav {
+  font-family: FSEX300;
+  color: var(--main-title-color);
+  text-shadow: -2px 2px 3px rgba(0, 0, 0, 0.7);
+  font-weight: 700;
+  font-size: 20px;
+  text-indent: 20px;
+  line-height: 50px;
+  height: 50px;
+  background: #171717;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border-radius: 15px;
+  border-style: solid;
+  border-color: beige;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Main Section */
+main {
+    padding: 20px;
+}
+
+/* Bubble Styles */
+.bubble {
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bubble::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #f7f7f7 transparent;
+}
+
+/* Playlist Section */
+.playlist-section {
+    margin-bottom: 30px;
+}
+
+.playlist-section h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+/* .toggle-button { */
+/*     display: flex; */
+/*     align-items: center; */
+/*     justify-content: center; */
+/*     width: 30px; */
+/*     height: 30px; */
+/*     border-radius: 50%; */
+/*     background-color: #333; */
+/*     color: #fff; */
+/*     font-size: 20px; */
+/*     margin-left: 10px; */
+/*     cursor: pointer; */
+/* } */
+
+.toggle-button{
+    display: flex;
+    /* margin-top:10px; */
+    margin-left: 10px;
+    align-items: center;
+    border-radius:2px;
+    box-shadow:0 0 0 2px #000;
+    width:24px;
+    height:24px;
+    border-color:#fff #757575 #757575 #fff;
+    border-style:solid;
+    border-width:2px;
+    background:#b8b8b8;
+    cursor:pointer
+}
+
+.playlist-item {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.playlist-item:hover {
+    /* background-color: #f7f7f7; */
+    background-color: #757575;
+}
+
+.playlist-item img {
+    width: 120px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.playlist-item h1 {
+    font-size: 18px;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.playlist-item h2 {
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Boxy Style */
+.playlist-item {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.playlist-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+    display: none;
+}

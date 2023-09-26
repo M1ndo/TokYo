@@ -4,10 +4,9 @@ package app
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/wybiral/torgo"
-	"github.com/m1ndo/TokYo/pkg/onionkey"
+	"gitlab.com/DaFunk1/TokYo/pkg/onionkey"
+	"os"
 )
 
 type tor struct {

@@ -1,0 +1,104 @@
+{{ $playing := .Playing }}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TokYo - {{$playing.Title}}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/static/plyr.css">
+    <link rel="stylesheet" type="text/css" href="/static/video.css">
+    <script src="/static/plyr.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="/">TokYo</a>
+        {{ if not .Auth }}
+        <a href="/login">Login</a>
+        {{ end }}
+        {{ if .Auth }}
+        <a href="/logout">Logout</a>
+        {{ end }}
+    </nav>
+    <main>
+        <div id="player">
+            <div id="player-wrapper">
+                {{ if $playing.ID }}
+                <video id="video-player" controls></video>
+                <h1>{{ $playing.Title }}</h1>
+                <h2>{{ $playing.Modified }}</h2>
+                <p>{{ $playing.Description }}</p>
+                {{ else }}
+                <video id="video-player" controls></video>
+                {{ end }}
+            </div>
+        </div>
+        <div id="playlist">
+            {{ range $m := .Playlist }}
+            {{ if eq $m.ID $playing.ID }}
+            <a href="/v/{{ $m.ID }}" class="playing">
+            {{ else }}
+            <a href="/v/{{ $m.ID }}">
+            {{ end }}
+                <img src="/t/{{ $m.ID }}" alt="{{ $m.Title }}">
+                <div>
+                    <h1>{{ $m.Title }}</h1>
+                    <h2>{{ $m.Modified }}</h2>
+                </div>
+            </a>
+            {{ end }}
+        </div>
+    </main>
+
+    <script>
+        // Initialize Plyr video player
+        const player = new Plyr('#video-player', {
+            ratio: '16:9',
+            controls: [
+                'play-large',
+                'play',
+                'progress',
+                'current-time',
+                'mute',
+                'volume',
+                'captions',
+                'settings',
+                'download',
+                'pip',
+                'airplay',
+                'fullscreen'
+            ],
+        });
+        player.source = {
+            type: 'video',
+            title: '{{$playing.Title}}',
+            sources: [
+                {
+                    src:  {{ $playing.FilePath }},
+                    type: {{ .FileType }},
+                    size: 1080,
+                },
+            ],
+            poster: '/t/{{$playing.ID}}',
+            // previewThumbnails: {
+            //     src: '/path/to/thumbnails.vtt',
+            // },
+            tracks: [
+                {
+                kind: 'captions',
+                label: 'English',
+                srclang: 'en',
+                src: '/path/to/captions.en.vtt',
+                default: true,
+                },
+                {
+                kind: 'captions',
+                label: 'French',
+                srclang: 'fr',
+                src: '/path/to/captions.fr.vtt',
+                },
+            ],
+        }
+    </script>
+</body>
+</html>

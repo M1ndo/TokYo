@@ -1,38 +1,42 @@
-{{ $playing := .Playing }}
+<!DOCTYPE html>
 <html>
 <head>
     <title>TokYo</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="/static/theme.css">
+    <link rel="stylesheet" type="text/css" href="/static/index.css">
+    <script src="/static/index.js"></script>
 </head>
 <body>
-    <nav><a href="/">TokYo</a></nav>
+    <nav>
+        <a href="/">TokYo</a>
+        {{ if not .Auth }}
+        <a href="/login">Login</a>
+        {{ end }}
+        {{ if .Auth }}
+        <a href="/logout">Logout</a>
+        {{ end }}
+    </nav>
     <main>
-        <div id="player">
-            {{ if $playing.ID }}
-            <video id="video" controls poster="/t/{{ $playing.ID}}" src="/v/{{ $playing.ID }}.mp4"></video>
-            <h1>{{ $playing.Title }}</h1>
-            <h2>{{ $playing.Modified }}</h2>
-            <p>{{ $playing.Description }}</p>
-            {{ else }}
-            <video id="video" controls></video>
-            {{ end }}
-        </div>
         <div id="playlist">
-            {{ range $m := .Playlist }}
-            {{ if eq $m.ID $playing.ID }}
-            <a href="/v/{{ $m.ID }}" class="playing">
-            {{ else }}
-            <a href="/v/{{ $m.ID }}">
-            {{ end }}
-                <img src="/static/default.jpg">
-                <div>
-                    <h1>{{ $m.Title }}</h1>
-                    <h2>{{ $m.Modified }}</h2>
-                </div>
-            </a>
+            {{ $sections := .Sections }}
+            {{ range $section, $videos := $sections }}
+            <div class="playlist-section">
+                <h1>
+                    {{ $section }}
+                    <div class="toggle-button">&#x21E9;</div>
+                </h1>
+                {{ range $m := $videos }}
+                <a href="/v/{{ $m.ID }}" class="playlist-item hidden">
+                    <img src="/t/{{ $m.ID }}" alt="{{ $m.Title }}">
+                    <div>
+                        <h1>{{ $m.Title }}</h1>
+                        <h2>{{ $m.Modified }}</h2>
+                    </div>
+                </a>
+                {{ end }}
+            </div>
             {{ end }}
         </div>
     </main>

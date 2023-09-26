@@ -155,7 +155,6 @@ main {
         height: 240px;
     }
 }
-
 /* 240p with shifted playlist */
 @media only screen and (max-width: 750px) {
     main {

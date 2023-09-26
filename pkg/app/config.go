@@ -17,8 +17,9 @@ type Config struct {
 
 // PathConfig settings for media library path.
 type PathConfig struct {
-	Path   string `json:"path"`
-	Prefix string `json:"prefix"`
+	Path    string `json:"path"`
+	Prefix  string `json:"prefix"`
+	Private bool   `json:"private"`
 }
 
 // ServerConfig settings for App Server.
@@ -57,9 +58,10 @@ type TorControllerConfig struct {
 func DefaultConfig() *Config {
 	return &Config{
 		Library: []*PathConfig{
-			&PathConfig{
+			{
 				Path:   "videos",
 				Prefix: "",
+				Private: false,
 			},
 		},
 		Server: &ServerConfig{

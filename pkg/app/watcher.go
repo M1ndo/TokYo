@@ -1,4 +1,4 @@
-// Date: 21/06/2019
+// Date: 21/06/2019 || 2023/09/11
 // Created By ybenel
 package app
 
@@ -41,7 +41,7 @@ func startWatcher(a *App) {
 			// handle remove events first
 			if len(removeEvents) > 0 {
 				for p := range removeEvents {
-					a.Library.Remove(p)
+					a.Library.Remove(a.Logger, p)
 				}
 				// clear map
 				removeEvents = make(map[string]struct{})
@@ -49,7 +49,7 @@ func startWatcher(a *App) {
 			// then handle add events
 			if len(addEvents) > 0 {
 				for p := range addEvents {
-					a.Library.Add(p)
+					a.Library.Add(a.Logger, p)
 				}
 				// clear map
 				addEvents = make(map[string]struct{})
