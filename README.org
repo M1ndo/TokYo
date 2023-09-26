@@ -56,8 +56,8 @@ Simply by creating an account in =/signup=
 ./tokyo-sql -show
 #+end_src
 * Screenshots
-#+HTML: <img src="assets/tokyo1.png" align="center" width="1000" height="500">
-#+HTML: <img src="assets/tokyo2.png" align="center" width="1000" height="500">
+#+HTML: <img src="static/tokyo1.png" align="center" width="1000" height="500">
+#+HTML: <img src="static/tokyo2.png" align="center" width="1000" height="500">
 
 * License
 AGPL3
