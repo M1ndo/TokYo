@@ -4,7 +4,7 @@ package main
 
 import (
 	"fmt"
-	app "gitlab.com/DaFunk1/TokYo/pkg/app"
+	app "github.com/M1ndo/TokYo/pkg/app"
 	"os"
 )
 

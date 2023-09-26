@@ -21,9 +21,9 @@ import (
 	mux "github.com/gorilla/mux"
 	sessions "github.com/gorilla/sessions"
 	secure "github.com/unrolled/secure"
-	mylog "gitlab.com/DaFunk1/TokYo/pkg/log"
-	media "gitlab.com/DaFunk1/TokYo/pkg/media"
-	onionkey "gitlab.com/DaFunk1/TokYo/pkg/onionkey"
+	mylog "github.com/M1ndo/TokYo/pkg/log"
+	media "github.com/M1ndo/TokYo/pkg/media"
+	onionkey "github.com/M1ndo/TokYo/pkg/onionkey"
 	// "github.com/sirupsen/logrus"
 	// errlog "github.com/snwfdhmp/errlog"
 )

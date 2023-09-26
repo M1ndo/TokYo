@@ -5,7 +5,7 @@ package app
 import (
 	"fmt"
 	"github.com/wybiral/torgo"
-	"gitlab.com/DaFunk1/TokYo/pkg/onionkey"
+	"github.com/M1ndo/TokYo/pkg/onionkey"
 	"os"
 )
 

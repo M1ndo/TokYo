@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	mylog "gitlab.com/DaFunk1/TokYo/pkg/log"
+	mylog "github.com/M1ndo/TokYo/pkg/log"
 )
 
 // Library manages importing and retrieving video data.

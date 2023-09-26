@@ -1,4 +1,4 @@
-module gitlab.com/DaFunk1/TokYo
+module github.com/M1ndo/TokYo
 
 go 1.20
 
