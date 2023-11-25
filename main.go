@@ -12,7 +12,7 @@ func main() {
 	cfg := app.DefaultConfig()
 	err := cfg.ReadFile("config.json")
 	if err != nil && !os.IsNotExist(err) {
-		fmt.Println(err)
+		panic(err)
 	}
 	app.ParseFlags(cfg)
 	a, err := app.NewApp(cfg)
