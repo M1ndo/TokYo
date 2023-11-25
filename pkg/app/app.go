@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"path"
 	"strconv"
@@ -21,6 +22,7 @@ import (
 	mux "github.com/gorilla/mux"
 	sessions "github.com/gorilla/sessions"
 	secure "github.com/unrolled/secure"
+	cspbuild "github.com/unrolled/secure/cspbuilder"
 	mylog "github.com/M1ndo/TokYo/pkg/log"
 	media "github.com/M1ndo/TokYo/pkg/media"
 	onionkey "github.com/M1ndo/TokYo/pkg/onionkey"
@@ -30,18 +32,18 @@ import (
 
 // App represents main application.
 type App struct {
-	Config    *Config
+	Config     *Config
 	Middleware *Middleware
-	Library   *media.Library
-	Watcher   *fsnotify.Watcher
-	Templates *template.Template
-	Tor       *tor
-	Listener  net.Listener
-	Router    *mux.Router
-	Sessions  *sessions.CookieStore
-	Mdata     MData
-	Logger    *mylog.Logger
-	Debug     *DebugConfig
+	Library    *media.Library
+	Watcher    *fsnotify.Watcher
+	Templates  *template.Template
+	Tor        *tor
+	Listener   net.Listener
+	Router     *mux.Router
+	Sessions   *sessions.CookieStore
+	Mdata      MData
+	Logger     *mylog.Logger
+	Debug      *DebugConfig
 }
 
 // NewApp returns a new instance of App from Config.
@@ -50,11 +52,11 @@ func NewApp(cfg *Config) (*App, error) {
 		cfg = DefaultConfig()
 	}
 	a := &App{
-		Config: cfg,
+		Config:     cfg,
 		Middleware: &Middleware{},
-		Logger: &mylog.Logger{},
+		Logger:     &mylog.Logger{},
 	}
-	log, err := a.Logger.NewLogger() 
+	log, err := a.Logger.NewLogger()
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +67,9 @@ func NewApp(cfg *Config) (*App, error) {
 	// Setup debugger
 	a.Debug = &DebugConfig{}
 	a.Debug.Config = a.Debug.DefaultConfig()
-	// a.Debug.Config.PrintFunc = logrus.Errorf 
-	// a.Debug.Config.PrintFunc = a.Logger.Log.Fatalf 
-	a.Debug.Logger = a.Debug.NewDebug() 
+	// a.Debug.Config.PrintFunc = logrus.Errorf
+	// a.Debug.Config.PrintFunc = a.Logger.Log.Fatalf
+	a.Debug.Logger = a.Debug.NewDebug()
 	// Setup Watcher
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -97,6 +99,18 @@ func NewApp(cfg *Config) (*App, error) {
 	a.Middleware.AppInstance = a
 	// Initialize DB
 	a.Middleware.InitializeDB()
+	// Csp build
+	cspBuild := cspbuild.Builder{
+		Directives: map[string][]string{
+			cspbuild.DefaultSrc: {"self"},
+			cspbuild.ScriptSrc:  {"self", "$NONCE", "stream.ybenel.cf", "static.cloudflareinsights.com", "192.168.1.110:9110"},
+			cspbuild.ConnectSrc: {"self", "stream.ybenel.cf", "cdn.plyr.io", "192.168.1.110:9110"},
+			cspbuild.StyleSrc:   {"self", "stream.ybenel.cf", "192.168.1.110:9110"},
+			cspbuild.FontSrc:    {"self", "stream.ybenel.cf", "192.168.1.110:9110"},
+			cspbuild.MediaSrc:   {"self", "stream.ybenel.cf", "cdn.plyr.io", "192.168.1.110:9110"},
+			cspbuild.ImgSrc:     {"*"},
+		},
+	}
 	// Setup Router
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny: true,
@@ -111,7 +125,7 @@ func NewApp(cfg *Config) (*App, error) {
 		STSPreload:            true,
 		ContentTypeNosniff:    true,
 		BrowserXssFilter:      true,
-		ContentSecurityPolicy: "script-src 'self' 'unsafe-inline'",
+		ContentSecurityPolicy: cspBuild.MustBuild(), //"script-src 'self' 'unsafe-inline'",
 	})
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(secureMiddleware.Handler)
@@ -134,6 +148,7 @@ func NewApp(cfg *Config) (*App, error) {
 	r.HandleFunc("/v/{id}.{ext}", a.videoHandler).Methods("GET")
 	r.HandleFunc("/v/{id}", a.pageHandler).Methods("GET")
 	r.HandleFunc("/v/{prefix}/{id}", a.pageHandler).Methods("GET")
+	r.HandleFunc("/stremio", a.reverseStremio).Methods("GET", "POST")
 	r.NotFoundHandler = http.HandlerFunc(a.Unfoundhandler) // Set custom 404 handler
 	// Static file handler
 	fsHandler := http.StripPrefix(
@@ -170,8 +185,8 @@ func (a *App) Run() error {
 	}
 	for _, pc := range a.Config.Library {
 		p := &media.Path{
-			Path:   pc.Path,
-			Prefix: pc.Prefix,
+			Path:    pc.Path,
+			Prefix:  pc.Prefix,
 			Private: pc.Private,
 		}
 		err := a.Library.AddPath(p)
@@ -202,7 +217,7 @@ func getPrefix(id string) string {
 // HTTP handler for /
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	a.Logger.Log.Info("/")
-	a.Logger.Log.Infof("Visitor IP: %s, User-Agent: %s", r.RemoteAddr, r.UserAgent())
+	a.Middleware.LogUser(r)
 	pl := a.Library.Playlist()
 	sections := make(map[string][]*media.Video)
 	for _, video := range pl {
@@ -220,11 +235,11 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	a.Templates.ExecuteTemplate(w, "index.html", &struct {
 		Playlist media.Playlist
 		Sections map[string][]*media.Video
-		Auth bool
+		Auth     bool
 	}{
 		Sections: sections,
 		Playlist: pl,
-		Auth: authenticated,
+		Auth:     authenticated,
 	})
 }
 
@@ -237,27 +252,30 @@ func (a *App) pageHandler(w http.ResponseWriter, r *http.Request) {
 		id = path.Join(prefix, id)
 	}
 	a.Logger.Log.Infof("/v/%s", id)
-	a.Logger.Log.Infof("Visitor IP: %s, User-Agent: %s", r.RemoteAddr, r.UserAgent())
+	a.Middleware.LogUser(r)
 	playing, ok := a.Library.Videos[id]
 	if !ok {
 		a.Unfoundhandler(w, r)
 		return
 	}
-  auth, err := a.MediaAcess(w, r, playing)
+	auth, err := a.MediaAcess(w, r, playing.Restricted)
 	if err != nil {
 		a.Deniedhandler(w, r, &ErrorHandler{Error: err.Error()})
 		return
 	}
+	nonce := secure.CSPNonce(r.Context())
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	a.Templates.ExecuteTemplate(w, "video.html", &struct {
 		Playing  *media.Video
 		FileType template.HTML
 		Playlist media.Playlist
-		Auth bool
+		Nonce    string
+		Auth     bool
 	}{
 		Playing:  playing,
 		FileType: template.HTML(playing.FileType),
 		Playlist: a.Library.Playlist(),
+		Nonce:    nonce,
 		Auth:     auth,
 	})
 }
@@ -277,7 +295,7 @@ func (a *App) videoHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-  _, err := a.MediaAcess(w, r, m)
+	_, err := a.MediaAcess(w, r, m.Restricted)
 	if err != nil {
 		a.Deniedhandler(w, r, &ErrorHandler{Error: err.Error()})
 	}
@@ -387,6 +405,8 @@ func (app *App) GetLogger() *mylog.Logger {
 // Login Handler
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the username and password from the request body
+	a.Logger.Log.Infof("Login request Initiated")
+	a.Middleware.LogUser(r)
 	if r.Method == "POST" {
 		err := r.ParseForm()
 		if err != nil {
@@ -429,11 +449,13 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 // Sign up Handler
 func (a *App) signupHandler(w http.ResponseWriter, r *http.Request) {
+	a.Logger.Log.Infof("Sign Up request Initiated")
+	a.Middleware.LogUser(r)
 	if r.Method != "POST" {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		a.Templates.ExecuteTemplate(w, "login.html", nil)
 	}
-		err := r.ParseForm()
+	err := r.ParseForm()
 	if err != nil {
 		a.Logger.Log.Error("Failed to parse sign-up form:", err)
 		a.Templates.ExecuteTemplate(w, "login.html", &ErrorHandler{Error: "Failed to parse sign-up form"})
@@ -442,7 +464,6 @@ func (a *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.Form.Get("username")
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
-	a.Logger.Log.Logf("Sign-up Request from %s", r.UserAgent())
 	// Validate email
 	a.Mdata.Email = email
 	_, err = a.Mdata.Validate()
@@ -464,22 +485,49 @@ func (a *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Stremio reverse-proxy
+func (a *App) reverseStremio(w http.ResponseWriter, r *http.Request) {
+	auth, err := a.MediaAcess(w, r, true)
+	if !auth {
+		a.Deniedhandler(w, r, &ErrorHandler{Error: err.Error()})
+	}
+	Url := a.Config.Stremio.StreamUrl
+	streamUrl, err := url.Parse(Url)
+	if err != nil {
+		a.Logger.Log.Error(err)
+	}
+	proxy := httputil.NewSingleHostReverseProxy(streamUrl)
+	proxy.Director = func(req *http.Request) {
+		// Rewrite the path to remove the "/stremio" prefix
+		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/stremio")
+		// Set the target host of the reverse proxy to the JavaScript app's address
+		req.URL.Scheme = streamUrl.Scheme
+		req.URL.Host = streamUrl.Host
+		if strings.HasPrefix(r.URL.Path, "/scripts/") ||
+			strings.HasPrefix(r.URL.Path, "/styles/") {
+			proxy.ServeHTTP(w, r)
+			return
+		}
+	}
+	proxy.ServeHTTP(w, r)
+}
+
 // Failed Sessions
 func (a *App) FailedSession(w http.ResponseWriter, r *http.Request) {
-		a.Logger.Log.Warn("Failed to obtain session.")
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
+	a.Logger.Log.Warn("Failed to obtain session.")
+	http.Redirect(w, r, "/login", http.StatusFound)
+	return
 }
 
 // Restricted Acesss and authentication
-func (a *App) MediaAcess(w http.ResponseWriter, r *http.Request, m *media.Video) (bool, error) {
+func (a *App) MediaAcess(w http.ResponseWriter, r *http.Request, restricted bool) (bool, error) {
 	session, err := a.Sessions.Get(r, "session")
 	if err != nil {
 		a.FailedSession(w, r)
 		return false, err
 	}
 	authenticated, _ := session.Values["authenticated"].(bool)
-	if m.Restricted {
+	if restricted {
 		if restrictedAcc, ok := session.Values["restrictedAcc"].(bool); !ok || !restrictedAcc {
 			return authenticated, errors.New("Insufficient Access")
 		}

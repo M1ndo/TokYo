@@ -1,5 +1,5 @@
 // Date: 2023/07/25
-// Unfinished Middleware for authentication.
+// Middleware for authentication/Logging.
 package app
 
 import (
@@ -15,7 +15,7 @@ import (
 
 type Middleware struct {
 	AppInstance *App
-	DB *sql.DB
+	DB          *sql.DB
 }
 
 // Initialize the SQLite database connection
@@ -112,7 +112,7 @@ func (m *Middleware) is_admin(username string) bool {
 	}
 	defer ftmt.Close()
 	var isAdmin bool
-	err = ftmt.QueryRow(username).Scan(isAdmin)
+	err = ftmt.QueryRow(username).Scan(&isAdmin)
 	if err != nil {
 		return false
 	}
@@ -168,8 +168,8 @@ func (m *Middleware) SignUpAndSetSession(name, password, email string, w http.Re
 			return false, errors.New("Password is too long")
 		}
 		hashedpass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil{
-			return false,  err
+		if err != nil {
+			return false, err
 		}
 		_, err = m.DB.Exec(query, name, hashedpass, email)
 		if err != nil {
@@ -183,5 +183,20 @@ func (m *Middleware) SignUpAndSetSession(name, password, email string, w http.Re
 		}
 	} else {
 		return false, errors.New("User already exists!")
+	}
+}
+
+// Log Visitor Ip And User-Agent (Can be disabled on the cmd options).
+func (m *Middleware) LogUser(r *http.Request) {
+	if m.AppInstance.Config.Logging {
+		ip := r.Header.Get("CF-Connecting-IP")
+		if ip == "" {
+			ip = r.Header.Get("X-Forwarded-For")
+		}
+		if ip == "" {
+			ip = "0xdeadbeef"
+		}
+		userAgent := r.UserAgent()
+		m.AppInstance.Logger.Log.Logf("Connected Ip %s, User-agent %s", ip, userAgent)
 	}
 }
