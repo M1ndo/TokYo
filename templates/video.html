@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="/static/plyr.css">
     <link rel="stylesheet" type="text/css" href="/static/video.css">
     <script src="/static/plyr.js"></script>
+    <script src="/static/page.js"></script>
 </head>
 <body>
     <nav>
@@ -50,7 +51,7 @@
         </div>
     </main>
 
-    <script>
+    <script nonce={{ .Nonce }}>
         // Initialize Plyr video player
         const player = new Plyr('#video-player', {
             ratio: '16:9',
@@ -88,7 +89,7 @@
                 kind: 'captions',
                 label: 'English',
                 srclang: 'en',
-                src: '/path/to/captions.en.vtt',
+                src: '/static/subs/{{$playing.ID}}.srt',
                 default: true,
                 },
                 {
