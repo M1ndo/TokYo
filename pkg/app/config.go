@@ -1,4 +1,4 @@
-// Date: 24/06/2019
+// Date: 2023/11/25
 // Created By ybenel
 package app
 
@@ -9,10 +9,12 @@ import (
 
 // Config settings for main App.
 type Config struct {
-	Library []*PathConfig `json:"library"`
-	Server  *ServerConfig `json:"server"`
-	Feed    *FeedConfig   `json:"feed"`
-	Tor     *TorConfig    `json:"tor,omitempty"`
+	Library []*PathConfig  `json:"library"`
+	Server  *ServerConfig  `json:"server"`
+	Feed    *FeedConfig    `json:"feed"`
+	Tor     *TorConfig     `json:"tor,omitempty"`
+	Stremio *StremioConfig `json:"stremio"`
+	Logging bool           `json:"logging"`
 }
 
 // PathConfig settings for media library path.
@@ -47,6 +49,11 @@ type TorConfig struct {
 	Controller *TorControllerConfig `json:"controller"`
 }
 
+// Stremio Config
+type StremioConfig struct {
+	StreamUrl string `json:"host"`
+}
+
 // TorControllerConfig stores tor controller configuration.
 type TorControllerConfig struct {
 	Host     string `json:"host"`
@@ -59,14 +66,17 @@ func DefaultConfig() *Config {
 	return &Config{
 		Library: []*PathConfig{
 			{
-				Path:   "videos",
-				Prefix: "",
+				Path:    "videos",
+				Prefix:  "",
 				Private: false,
 			},
 		},
 		Server: &ServerConfig{
 			Host: "127.0.0.1",
 			Port: 0,
+		},
+		Stremio: &StremioConfig{
+			StreamUrl: "http://127.0.0.1:8080",
 		},
 		Feed: &FeedConfig{
 			ExternalURL: "http://localhost",
@@ -78,6 +88,7 @@ func DefaultConfig() *Config {
 				Port: 9051,
 			},
 		},
+		Logging: true,
 	}
 }
 

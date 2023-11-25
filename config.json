@@ -21,22 +21,26 @@
         "port": 9110
     },
     "feed": {
-        "external_url": "",
-        "title": "Feed Title",
-        "link": "http://your-url.example/about",
-        "description": "Feed Description",
+        "external_url": "https://stream.ybenel.cf",
+        "title": "TokYo - Home",
+        "link": "https://stream.ybenel.cf/",
+        "description": "My Home Videos/Movie Collection",
         "author": {
-            "name": "Author Name",
-            "email": "author@somewhere.example"
+            "name": "ybenel",
+            "email": "root@ybenel.cf"
         },
-        "copyright": "Copyright Text"
+        "copyright": "For my personal videos, feel free to share. Other things Copyright to the right holders"
     },
     "tor": {
         "enable": false,
         "controller": {
             "host": "127.0.0.1",
             "port": 9051,
-            "password": "123445678788"
+            "password": "123456780"
         }
-    }
+    },
+    "stremio": {
+        "host": "http://192.168.1.110:8080"
+    },
+    "logging": true
 }
