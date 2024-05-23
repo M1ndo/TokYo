@@ -20,6 +20,7 @@ import (
 	fsnotify "github.com/fsnotify/fsnotify"
 	feeds "github.com/gorilla/feeds"
 	mux "github.com/gorilla/mux"
+	secureCookie "github.com/gorilla/securecookie"
 	sessions "github.com/gorilla/sessions"
 	secure "github.com/unrolled/secure"
 	cspbuild "github.com/unrolled/secure/cspbuilder"
@@ -93,8 +94,7 @@ func NewApp(cfg *Config) (*App, error) {
 		a.Tor = t
 	}
 	// Setup Sessions
-	store := sessions.NewCookieStore([]byte("SOMETHING"))
-	// store := sessions.NewCookieStore([]byte(os.Getenv("SEC_SESSION")))
+	store := sessions.NewCookieStore(secureCookie.GenerateRandomKey(64))
 	a.Sessions = store
 	a.Middleware.AppInstance = a
 	// Initialize DB
@@ -201,7 +201,9 @@ func (a *App) Run() error {
 		a.Watcher.Add(p.Path)
 	}
 	go startWatcher(a)
-
+	if a.Config.Server.Tls {
+		return http.ServeTLS(a.Listener, a.Router, a.Config.Server.TlsCert, a.Config.Server.TlsKey)
+	}
 	return http.Serve(a.Listener, a.Router)
 }
 
@@ -224,7 +226,7 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 		prefix := getPrefix(video.ID)
 		sections[prefix] = append(sections[prefix], video)
 	}
-	session, err := a.Sessions.Get(r, "session")
+	session, err := a.Sessions.Get(r, "TokYoSession")
 	if err != nil {
 		a.FailedSession(w, r)
 	}
@@ -298,6 +300,7 @@ func (a *App) videoHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := a.MediaAcess(w, r, m.Restricted)
 	if err != nil {
 		a.Deniedhandler(w, r, &ErrorHandler{Error: err.Error()})
+		return
 	}
 	contentType := a.Library.GetContentType(ext)
 	filename := m.Title + "." + ext
@@ -433,13 +436,14 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 // Logout Handler
 func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := a.Sessions.Get(r, "session")
+	session, err := a.Sessions.Get(r, "TokYoSession")
 	if err != nil {
 		a.FailedSession(w, r)
 	}
 	session.Values["authenticated"] = false
 	session.Values["username"] = ""
 	session.Values["SessionID"] = ""
+	session.Options.MaxAge = -1
 	err = session.Save(r, w)
 	if err != nil {
 		a.Logger.Log.Warn("Failed to save session:", err)
@@ -450,11 +454,17 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 // Sign up Handler
 func (a *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	a.Logger.Log.Infof("Sign Up request Initiated")
-	a.Middleware.LogUser(r)
-	if r.Method != "POST" {
+	switch {
+	case !a.Config.Server.Regisration:
+		w.WriteHeader(http.StatusUnauthorized)
+		a.Templates.ExecuteTemplate(w, "login.html", &ErrorHandler{Error: "Registration is currently disabled"})
+		return
+	case r.Method != "POST":
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		a.Templates.ExecuteTemplate(w, "login.html", nil)
+		return
 	}
+	a.Middleware.LogUser(r)
 	err := r.ParseForm()
 	if err != nil {
 		a.Logger.Log.Error("Failed to parse sign-up form:", err)
@@ -474,14 +484,14 @@ func (a *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	isUser, err := a.Middleware.SignUpAndSetSession(username, password, email, w, r)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		a.Templates.ExecuteTemplate(w, "login.html", &ErrorHandler{Error: err.Error()})
+		a.Templates.ExecuteTemplate(w, "login.html", &ErrorHandler{Error: "Error Occured"})
 		return
 	}
 	if isUser {
 		http.Redirect(w, r, "/", http.StatusFound)
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		a.Templates.ExecuteTemplate(w, "login.html", &ErrorHandler{Error: err.Error()})
+		a.Templates.ExecuteTemplate(w, "login.html", &ErrorHandler{Error: "Error Occured"})
 	}
 }
 
@@ -521,14 +531,17 @@ func (a *App) FailedSession(w http.ResponseWriter, r *http.Request) {
 
 // Restricted Acesss and authentication
 func (a *App) MediaAcess(w http.ResponseWriter, r *http.Request, restricted bool) (bool, error) {
-	session, err := a.Sessions.Get(r, "session")
+	session, err := a.Sessions.Get(r, "TokYoSession")
 	if err != nil {
 		a.FailedSession(w, r)
 		return false, err
 	}
 	authenticated, _ := session.Values["authenticated"].(bool)
+	if !authenticated && restricted {
+		return authenticated, errors.New("Insufficient Access")
+	}
 	if restricted {
-		if restrictedAcc, ok := session.Values["restrictedAcc"].(bool); !ok || !restrictedAcc {
+		if restrictedAcc, ok := session.Values["AdminAcc"].(bool); !ok || !restrictedAcc {
 			return authenticated, errors.New("Insufficient Access")
 		}
 	}

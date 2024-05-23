@@ -14,7 +14,6 @@ type Config struct {
 	Feed    *FeedConfig    `json:"feed"`
 	Tor     *TorConfig     `json:"tor,omitempty"`
 	Stremio *StremioConfig `json:"stremio"`
-	Logging bool           `json:"logging"`
 }
 
 // PathConfig settings for media library path.
@@ -26,8 +25,13 @@ type PathConfig struct {
 
 // ServerConfig settings for App Server.
 type ServerConfig struct {
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	Host        string `json:"host"`
+	Port        int    `json:"port"`
+	Logging     bool   `json:"logging"`
+	Regisration bool   `json:"registration"`
+	Tls         bool   `json:"tls"`
+	TlsCert     string `json:"cert"`
+	TlsKey      string `json:"keyfile"`
 }
 
 // FeedConfig settings for App Feed.
@@ -74,6 +78,10 @@ func DefaultConfig() *Config {
 		Server: &ServerConfig{
 			Host: "127.0.0.1",
 			Port: 0,
+			Logging: true,
+			Tls: false,
+			TlsCert: "",
+			TlsKey: "",
 		},
 		Stremio: &StremioConfig{
 			StreamUrl: "http://127.0.0.1:8080",
@@ -88,7 +96,6 @@ func DefaultConfig() *Config {
 				Port: 9051,
 			},
 		},
-		Logging: true,
 	}
 }
 

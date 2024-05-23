@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
@@ -90,7 +91,7 @@ func (m *Middleware) authenticate(username, password string, db *sql.DB) bool {
 func (m *Middleware) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m.AppInstance.Logger.Log.Println("[+] Middleware has been executed.")
-		session, err := m.AppInstance.Sessions.Get(r, "session")
+		session, err := m.AppInstance.Sessions.Get(r, "TokYoSession")
 		if err != nil {
 			m.AppInstance.FailedSession(w, r)
 			return
@@ -134,7 +135,7 @@ func (m *Middleware) AuthenticateAndSetSession(username, password string, w http
 		m.AppInstance.Logger.Log.Println("[ERROR] Failed to generate session ID:", err)
 		return false
 	}
-	session, err := m.AppInstance.Sessions.Get(r, "session")
+	session, err := m.AppInstance.Sessions.Get(r, "TokYoSession")
 	if err != nil {
 		m.AppInstance.Logger.Log.Println("[ERROR] Failed to get session:", err)
 		return false
@@ -142,7 +143,7 @@ func (m *Middleware) AuthenticateAndSetSession(username, password string, w http
 	session.Values["username"] = username
 	session.Values["sessionID"] = sessionID.String()
 	session.Values["authenticated"] = true
-	session.Values["restrictedAcc"] = isAdmin
+	session.Values["AdminAcc"] = isAdmin
 	err = session.Save(r, w)
 	if err != nil {
 		m.AppInstance.Logger.Log.Println("[ERROR] Failed to save session:", err)
@@ -188,15 +189,17 @@ func (m *Middleware) SignUpAndSetSession(name, password, email string, w http.Re
 
 // Log Visitor Ip And User-Agent (Can be disabled on the cmd options).
 func (m *Middleware) LogUser(r *http.Request) {
-	if m.AppInstance.Config.Logging {
+	if m.AppInstance.Config.Server.Logging {
 		ip := r.Header.Get("CF-Connecting-IP")
 		if ip == "" {
 			ip = r.Header.Get("X-Forwarded-For")
 		}
 		if ip == "" {
-			ip = "0xdeadbeef"
+			ip = strings.Split(r.RemoteAddr, ":")[0]
+			// ip = "0xdeadbeef"
 		}
 		userAgent := r.UserAgent()
-		m.AppInstance.Logger.Log.Logf("Connected Ip %s, User-agent %s", ip, userAgent)
+		route := r.RequestURI
+		m.AppInstance.Logger.Log.Logf("Connected Ip %s, User-agent %s, URI %s", ip, userAgent, route)
 	}
 }
