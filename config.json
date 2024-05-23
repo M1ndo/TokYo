@@ -1,4 +1,13 @@
 {
+    "server": {
+        "host": "0.0.0.0",
+        "port": 9110,
+        "tls": false,
+        "cert": "certs/fullchain.pem",
+        "keyfile": "certs/privkey.pem",
+        "registration": true,
+        "logging": true
+    },
     "library": [
         {
             "path": "videos",
@@ -16,10 +25,6 @@
             "private": true
         }
     ],
-    "server": {
-        "host": "192.168.1.110",
-        "port": 9110
-    },
     "feed": {
         "external_url": "https://stream.ybenel.cf",
         "title": "TokYo - Home",
@@ -41,6 +46,5 @@
     },
     "stremio": {
         "host": "http://192.168.1.110:8080"
-    },
-    "logging": true
+    }
 }
